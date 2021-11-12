@@ -1,0 +1,178 @@
+#include <iostream>
+#include <stack>
+#include<cstring>
+
+using namespace std;
+
+#define N 4
+#define M 5
+
+class myException : public exception { //custom exception for particular case
+public:
+    virtual const char* what() const throw() {
+        return "The stack is empty and no path is found in maze!";
+     }
+};
+
+class node {
+public:
+    int x, y;
+    int dir;
+
+    node(int i, int j)
+    {
+        x = i;
+        y = j;
+
+        // Initially direction
+        // define to 0
+        dir = 0;
+    }
+};
+
+// maze of n*m matrix
+int rows = N, colums = M;
+// Coordinates of aim 
+int fx, fy;
+//array for marked blocks od maze 
+bool visited[N][M];
+
+bool isReachable(int maze[N][M])
+{
+                      // Initially starting from (0, 0).
+    int i = 0, j = 0;
+
+    stack<node> s;
+                    //initializing the members of class
+    node temp(i, j);
+                      //pushing first coordinates in stack
+    s.push(temp);
+
+    while (!s.empty()) {// true when stack is not empty
+
+        // Pop the top node and move to the
+        // left, right, top, down or retract
+        // back according the value of node's
+        // dir variable.
+        temp = s.top();
+        int d = temp.dir;
+        i = temp.x, j = temp.y;
+
+        // Increment the direction and
+        // push the node in the stack again.
+        temp.dir++;     
+        s.pop();        //poped the last node from the stack which was added earlier
+        s.push(temp);   //pushed the incremented dir in stack 
+
+        // If we reach the right lowest corner 
+        // return true
+        if (i == fx and j == fy) {
+            return true;
+        }
+
+         // Checking the "Up" direction
+         //if our ('i' which is in charge for rows)
+        //will satisfy the condition in if-statement we'll have access to the Up direction
+        if (d == 0) {
+            if (i - 1 >= 0 && maze[i - 1][j] &&
+                                visited[i - 1][j]) {
+
+                node temp1(i - 1, j); //initialize the cordinates
+                visited[i - 1][j] =false; //that means we've visited that block of maze
+                s.push(temp1); // push into stack the "Up" coordinates
+            }
+        }
+
+
+        // Checking the left direction
+        //if our('j' which is in charge for rows)
+        //will satisfy the condition in if - statement we'll have access to the left direction
+        else if (d == 1) {
+            if (j - 1 >= 0 && maze[i][j - 1] &&
+                             visited[i][j - 1]) {
+                    
+                node temp1(i, j - 1);
+                visited[i][j - 1] = false;
+                s.push(temp1);// push into stack the "left" coordinates
+            }
+        }
+
+
+        // Checking the down direction
+        //if our( 'i' which is in charge for column) 
+        //will satisfy the condition in if - statement we'll have access to the down direction
+        else if (d == 2) {
+            if (i + 1 < rows && maze[i + 1][j] &&   // if we get a lowest row we cannot go down again
+                            visited[i + 1][j]) {
+
+                node temp1(i + 1, j);
+                visited[i + 1][j] = false;  //that means we've visited that block of maze
+                s.push(temp1);  // push into stack the "down" coordinates
+            }
+        }
+
+        // Checking the right direction
+         //if our( 'j' which is in charge for rows) 
+        //satisfy the condition in if - statement we'll have access to the right direction
+        else if (d == 3) {
+            if (j + 1 < colums && maze[i][j + 1] &&     // we move to right untill last colums will be reached and we'll get the aim
+                            visited[i][j + 1]) {
+                node temp1(i, j + 1);
+                visited[i][j + 1] = false;  //that means we've visited that block of maze
+                s.push(temp1);   // push into stack the "right" cordinates
+            }
+        }
+
+        // If none of the direction can take
+        // the maze to our aim, retract back
+        // to the way where the maze came from.
+        else {
+            visited[temp.x][temp.y] = true; //we initialize the cordinates as a true ,which means we are returning to the previous point
+            s.pop();                        //cause we do not have a way from current point to the next block of code
+                                            //pop out the current cordinates from the stack 
+        }                                   //try another side in that loop
+    }
+    
+
+    // If the stack is empty and
+    // no path is found return false
+    //we also throw exception in this case
+    throw myException();  
+    return false;
+
+}
+
+// Driver code
+int main()
+{
+    // Initially setting the visited
+    // array to true (unvisited)
+    memset(visited, true, sizeof(visited)); //fill all array with charecters of num '1'
+
+    // Maze matrix
+    int maze[N][M] = {
+        { 1, 1, 1, 0, 0 },
+        { 0, 0, 1, 1, 0 },
+        { 0, 0, 1, 0, 0 },
+        { 1, 0, 1, 1, 1 }
+    };
+
+    //coordinates of the supposing end of maze
+    fx = 3;
+    fy = 4;
+    try {
+        if (isReachable(maze)) {
+            bool t = 1;
+            cout << t;
+        }
+        else {
+            bool f = 0;
+            cout << f;
+
+        }
+    }
+    catch (myException &other) {
+        cout << other.what() << endl;
+
+   } 
+}
